@@ -11,7 +11,9 @@
 
 namespace Dunglas\ApiBundle\Mapping\Loader;
 
-use Dunglas\ApiBundle\Mapping\ClassMetadata;
+use Dunglas\ApiBundle\Exception\InvalidArgumentException;
+use Dunglas\ApiBundle\Exception\RuntimeException;
+use Dunglas\ApiBundle\Mapping\ClassMetadataInterface;
 
 /**
  * Calls multiple {@link LoaderInterface} instances in a chain.
@@ -36,13 +38,13 @@ class LoaderChain implements LoaderInterface
      *
      * @param LoaderInterface[] $loaders An array of LoaderInterface instances
      *
-     * @throws \InvalidArgumentException If any of the loaders does not implement LoaderInterface
+     * @throws InvalidArgumentException If any of the loaders does not implement LoaderInterface
      */
     public function __construct(array $loaders)
     {
         foreach ($loaders as $loader) {
             if (!$loader instanceof LoaderInterface) {
-                throw new \InvalidArgumentException(sprintf('Class %s is expected to implement LoaderInterface', get_class($loader)));
+                throw new InvalidArgumentException(sprintf('Class %s is expected to implement LoaderInterface', get_class($loader)));
             }
         }
 
@@ -53,7 +55,7 @@ class LoaderChain implements LoaderInterface
      * {@inheritdoc}
      */
     public function loadClassMetadata(
-        ClassMetadata $metadata,
+        ClassMetadataInterface $metadata,
         array $normalizationGroups = null,
         array $denormalizationGroups = null,
         array $validationGroups = null
@@ -75,14 +77,14 @@ class LoaderChain implements LoaderInterface
     }
 
     /**
-     * @param ClassMetadata $classMetaData
+     * @param ClassMetadataInterface $classMetaData
      *
-     * @throws \RunTimeException
+     * @throws RunTimeException
      */
-    private function checkClassMetaData(ClassMetadata $classMetaData)
+    private function checkClassMetaData(ClassMetadataInterface $classMetaData)
     {
         if (!$classMetaData->getIdentifier()) {
-            throw new \RunTimeException(sprintf('Class "%s" have no identifier.', $classMetaData->getName()));
+            throw new RuntimeException(sprintf('Class "%s" have no identifier.', $classMetaData->getName()));
         }
     }
 }

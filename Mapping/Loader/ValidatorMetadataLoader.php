@@ -11,7 +11,7 @@
 
 namespace Dunglas\ApiBundle\Mapping\Loader;
 
-use Dunglas\ApiBundle\Mapping\ClassMetadata;
+use Dunglas\ApiBundle\Mapping\ClassMetadataInterface;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\Mapping\Factory\MetadataFactoryInterface;
 
@@ -46,7 +46,7 @@ class ValidatorMetadataLoader implements LoaderInterface
      * {@inheritdoc}
      */
     public function loadClassMetadata(
-        ClassMetadata $classMetadata,
+        ClassMetadataInterface $classMetadata,
         array $normalizationGroups = null,
         array $denormalizationGroups = null,
         array $validationGroups = null

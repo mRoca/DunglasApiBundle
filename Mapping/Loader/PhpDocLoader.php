@@ -11,7 +11,7 @@
 
 namespace Dunglas\ApiBundle\Mapping\Loader;
 
-use Dunglas\ApiBundle\Mapping\ClassMetadata;
+use Dunglas\ApiBundle\Mapping\ClassMetadataInterface;
 use Dunglas\ApiBundle\Util\ReflectionTrait;
 use phpDocumentor\Reflection\FileReflector;
 use PropertyInfo\PropertyInfoInterface;
@@ -50,7 +50,7 @@ class PhpDocLoader implements LoaderInterface
      * {@inheritdoc}
      */
     public function loadClassMetadata(
-        ClassMetadata $classMetadata,
+        ClassMetadataInterface $classMetadata,
         array $normalizationGroups = null,
         array $denormalizationGroups = null,
         array $validationGroups = null

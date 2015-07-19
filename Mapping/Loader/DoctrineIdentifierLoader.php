@@ -12,7 +12,7 @@
 namespace Dunglas\ApiBundle\Mapping\Loader;
 
 use Doctrine\Common\Persistence\ManagerRegistry;
-use Dunglas\ApiBundle\Mapping\ClassMetadata;
+use Dunglas\ApiBundle\Mapping\ClassMetadataInterface;
 
 /**
  * Doctrine identifier loader.
@@ -36,7 +36,7 @@ class DoctrineIdentifierLoader implements LoaderInterface
      * {@inheritdoc}
      */
     public function loadClassMetadata(
-        ClassMetadata $classMetadata,
+        ClassMetadataInterface $classMetadata,
         array $normalizationGroups = null,
         array $denormalizationGroups = null,
         array $validationGroups = null

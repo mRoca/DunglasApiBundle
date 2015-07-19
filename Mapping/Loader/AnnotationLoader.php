@@ -12,7 +12,7 @@
 namespace Dunglas\ApiBundle\Mapping\Loader;
 
 use Doctrine\Common\Annotations\Reader;
-use Dunglas\ApiBundle\Mapping\ClassMetadata;
+use Dunglas\ApiBundle\Mapping\ClassMetadataInterface;
 use Dunglas\ApiBundle\Util\ReflectionTrait;
 
 /**
@@ -45,7 +45,7 @@ class AnnotationLoader implements LoaderInterface
      * {@inheritdoc}
      */
     public function loadClassMetadata(
-        ClassMetadata $classMetadata,
+        ClassMetadataInterface $classMetadata,
         array $normalizationGroups = null,
         array $denormalizationGroups = null,
         array $validationGroups = null

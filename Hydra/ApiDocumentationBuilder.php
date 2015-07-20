@@ -362,40 +362,41 @@ class ApiDocumentationBuilder implements ApiDocumentationBuilderInterface
      */
     private function getRange(AttributeMetadataInterface $attributeMetadata)
     {
-        if (isset($attributeMetadata->getTypes()[0])) {
-            $type = $attributeMetadata->getTypes()[0];
+        $type = $attributeMetadata->getType();
+        if (!$type) {
+            return;
+        }
 
-            if ($type->isCollection() && $collectionType = $type->getCollectionType()) {
-                $type = $collectionType;
-            }
+        if ($type->isCollection() && $collectionType = $type->getCollectionType()) {
+            $type = $collectionType;
+        }
 
-            switch ($type->getType()) {
-                case 'string':
-                    return 'xmls:string';
+        switch ($type->getType()) {
+            case 'string':
+                return 'xmls:string';
 
-                case 'int':
-                    return 'xmls:integer';
+            case 'int':
+                return 'xmls:integer';
 
-                case 'float':
-                    return 'xmls:double';
+            case 'float':
+                return 'xmls:double';
 
-                case 'bool':
-                    return 'xmls:boolean';
+            case 'bool':
+                return 'xmls:boolean';
 
-                case 'object':
-                    $class = $type->getClass();
+            case 'object':
+                $class = $type->getClass();
 
-                    if ($class) {
-                        if ('DateTime' === $class) {
-                            return 'xmls:dateTime';
-                        }
-
-                        if ($resource = $this->resourceCollection->getResourceForEntity($type->getClass())) {
-                            return sprintf('#%s', $resource->getShortName());
-                        }
+                if ($class) {
+                    if ('DateTime' === $class) {
+                        return 'xmls:dateTime';
                     }
-                break;
-            }
+
+                    if ($resource = $this->resourceCollection->getResourceForEntity($type->getClass())) {
+                        return sprintf('#%s', $resource->getShortName());
+                    }
+                }
+            break;
         }
     }
 

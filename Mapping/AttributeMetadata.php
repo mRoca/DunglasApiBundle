@@ -43,9 +43,9 @@ class AttributeMetadata implements AttributeMetadataInterface
      *
      * @internal This property is public in order to reduce the size of the
      *           class' serialized representation. Do not access it. Use
-     *           {@link getTypes()} instead.
+     *           {@link getType()} instead.
      */
-    public $types;
+    public $type;
     /**
      * @var string
      *
@@ -140,17 +140,20 @@ class AttributeMetadata implements AttributeMetadataInterface
     /**
      * {@inheritdoc}
      */
-    public function setTypes(array $types)
+    public function withType(Type $type)
     {
-        $this->types = $types;
+        $attributeMetadata = clone $this;
+        $attributeMetadata->type = $type;
+
+        return $attributeMetadata;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function getTypes()
+    public function getType()
     {
-        return $this->types;
+        return $this->type;
     }
 
     /**
@@ -329,7 +332,7 @@ class AttributeMetadata implements AttributeMetadataInterface
         return [
             'name',
             'identifier',
-            'types',
+            'type',
             'description',
             'readable',
             'writable',

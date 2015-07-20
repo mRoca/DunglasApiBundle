@@ -58,20 +58,19 @@ class AttributeMetadataFactory implements AttributeMetadataFactoryInterface
         }
 
         $types = $this->propertyInfo->getTypes($reflectionProperty);
-        if (null !== $types) {
-            $attributeMetadata->setTypes($types);
-        }
-
         if (!isset($types[0])) {
             return $attributeMetadata;
         }
 
-        $class = $types[0]->getClass();
+        $type = $types[0];
+        $attributeMetadata = $attributeMetadata->withType($type);
+
+        $class = $type->getClass();
         $link = $this->resourceCollection->getResourceForEntity($class) ||
             (
-                $types[0]->isCollection() &&
-                $types[0]->getCollectionType() &&
-                ($class = $types[0]->getCollectionType()->getClass()) &&
+                $type->isCollection() &&
+                $type->getCollectionType() &&
+                ($class = $type->getCollectionType()->getClass()) &&
                 $this->resourceCollection->getResourceForEntity($class)
             );
 

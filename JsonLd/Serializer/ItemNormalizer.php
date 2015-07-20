@@ -134,30 +134,29 @@ class ItemNormalizer extends AbstractNormalizer
                 $attributeName = $this->nameConverter->normalize($attributeName);
             }
 
-            if (isset($attributeMetadata->getTypes()[0])) {
-                $type = $attributeMetadata->getTypes()[0];
+            $type = $attributeMetadata->getType();
 
-                if (
-                    $attributeValue &&
-                    $type->isCollection() &&
-                    ($collectionType = $type->getCollectionType()) &&
-                    $subResource = $this->getResourceFromType($collectionType)
-                ) {
-                    $values = [];
-                    foreach ($attributeValue as $index => $obj) {
-                        $values[$index] = $this->normalizeRelation($attributeMetadata, $obj, $subResource, $context);
-                    }
-
-                    $data[$attributeName] = $values;
-
-                    continue;
+            if (
+                $attributeValue &&
+                $type &&
+                $type->isCollection() &&
+                ($collectionType = $type->getCollectionType()) &&
+                $subResource = $this->getResourceFromType($collectionType)
+            ) {
+                $values = [];
+                foreach ($attributeValue as $index => $obj) {
+                    $values[$index] = $this->normalizeRelation($attributeMetadata, $obj, $subResource, $context);
                 }
 
-                if ($attributeValue && $subResource = $this->getResourceFromType($type)) {
-                    $data[$attributeName] = $this->normalizeRelation($attributeMetadata, $attributeValue, $subResource, $context);
+                $data[$attributeName] = $values;
 
-                    continue;
-                }
+                continue;
+            }
+
+            if ($attributeValue && $type && $subResource = $this->getResourceFromType($type)) {
+                $data[$attributeName] = $this->normalizeRelation($attributeMetadata, $attributeValue, $subResource, $context);
+
+                continue;
             }
 
             $data[$attributeName] = $this->serializer->normalize($attributeValue, self::FORMAT, $context);
@@ -231,47 +230,43 @@ class ItemNormalizer extends AbstractNormalizer
                 continue;
             }
 
-            $types = $attributesMetadata[$attributeName]->getTypes();
-            if (isset($types[0])) {
-                $type = $types[0];
-
-                if (
-                    $attributeValue &&
-                    $type->isCollection() &&
-                    ($collectionType = $type->getCollectionType()) &&
-                    ($class = $collectionType->getClass())
-                ) {
-                    $values = [];
-                    foreach ($attributeValue as $index => $obj) {
-                        $values[$index] = $this->denormalizeRelation(
-                            $resource,
-                            $attributesMetadata[$attributeName],
-                            $class,
-                            $obj,
-                            $context
-                        );
-                    }
-
-                    $this->setValue($object, $attributeName, $values);
-
-                    continue;
-                }
-
-                if ($attributeValue && ($class = $type->getClass())) {
-                    $this->setValue(
-                        $object,
-                        $attributeName,
-                        $this->denormalizeRelation(
-                            $resource,
-                            $attributesMetadata[$attributeName],
-                            $class,
-                            $attributeValue,
-                            $context
-                        )
+            $type = $attributesMetadata[$attributeName]->getType();
+            if (
+                $attributeValue &&
+                $type->isCollection() &&
+                ($collectionType = $type->getCollectionType()) &&
+                ($class = $collectionType->getClass())
+            ) {
+                $values = [];
+                foreach ($attributeValue as $index => $obj) {
+                    $values[$index] = $this->denormalizeRelation(
+                        $resource,
+                        $attributesMetadata[$attributeName],
+                        $class,
+                        $obj,
+                        $context
                     );
-
-                    continue;
                 }
+
+                $this->setValue($object, $attributeName, $values);
+
+                continue;
+            }
+
+            if ($attributeValue && ($class = $type->getClass())) {
+                $this->setValue(
+                    $object,
+                    $attributeName,
+                    $this->denormalizeRelation(
+                        $resource,
+                        $attributesMetadata[$attributeName],
+                        $class,
+                        $attributeValue,
+                        $context
+                    )
+                );
+
+                continue;
             }
 
             $this->setValue($object, $attributeName, $attributeValue);

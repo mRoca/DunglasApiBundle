@@ -11,6 +11,8 @@
 
 namespace Dunglas\ApiBundle\Mapping;
 
+use PropertyInfo\Type;
+
 /**
  * Attribute metadata.
  *
@@ -26,18 +28,20 @@ interface AttributeMetadataInterface
     public function getName();
 
     /**
-     * Set types.
+     * Returns an instance with the specified type.
      *
-     * @param \PropertyInfo\Type[] $types
+     * @param Type $type
+     *
+     * @return self
      */
-    public function setTypes(array $types);
+    public function withType(Type $type);
 
     /**
-     * Gets types.
+     * Gets type.
      *
-     * @return \PropertyInfo\Type[]
+     * @return Type
      */
-    public function getTypes();
+    public function getType();
 
     /**
      * Gets description.
@@ -123,7 +127,7 @@ interface AttributeMetadataInterface
     /**
      * Gets the entity class of the related resource.
      *
-     * @return self
+     * @return string
      */
     public function getLinkClass();
 

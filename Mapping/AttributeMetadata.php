@@ -39,7 +39,7 @@ class AttributeMetadata implements AttributeMetadataInterface
      */
     public $name;
     /**
-     * @var Type[]
+     * @var Type
      *
      * @internal This property is public in order to reduce the size of the
      *           class' serialized representation. Do not access it. Use

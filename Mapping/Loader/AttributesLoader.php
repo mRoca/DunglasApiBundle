@@ -87,22 +87,29 @@ class AttributesLoader implements LoaderInterface
         foreach ($serializerClassMetadata->getAttributesMetadata() as $serializerAttribute) {
             $groups = $serializerAttribute->getGroups();
 
-            if (null !== $normalizationGroups && 0 < count(array_intersect($groups, $normalizationGroups))) {
+            if ($this->hasGroups($groups, $normalizationGroups)) {
                 $attribute = $this->getOrCreateAttribute($classMetadata, $serializerAttribute->getName(), $normalizationGroups, $denormalizationGroups);
-
-                if (!$attribute->isIdentifier()) {
-                    $attribute->setReadable(true);
-                }
+                $attribute->setReadable(true);
             }
 
-            if (null !== $denormalizationGroups && 0 < count(array_intersect($groups, $denormalizationGroups))) {
+            if ($this->hasGroups($groups, $denormalizationGroups)) {
                 $attribute = $this->getOrCreateAttribute($classMetadata, $serializerAttribute->getName(), $normalizationGroups, $denormalizationGroups);
-
-                if (!$attribute->isIdentifier()) {
-                    $attribute->setWritable(true);
-                }
+                $attribute->setWritable(true);
             }
         }
+    }
+
+    /**
+     * Checks if an attribute has the passed groups.
+     *
+     * @param array      $groups
+     * @param array|null $currentGroups
+     *
+     * @return bool
+     */
+    private function hasGroups(array $groups, array $currentGroups = null)
+    {
+        return null !== $currentGroups && 0 < count(array_intersect($groups, $currentGroups));
     }
 
     /**

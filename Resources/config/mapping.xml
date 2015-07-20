@@ -55,10 +55,6 @@
             <argument type="service" id="api.mapping.attribute_metadata_factory" />
         </service>
 
-        <service id="api.mapping.loaders.attributes" class="Dunglas\ApiBundle\Mapping\Loader\AttributesLoader" public="false">
-            <argument type="service" id="api.property_info" />
-        </service>
-
         <service id="api.mapping.loaders.validator_metadata" class="Dunglas\ApiBundle\Mapping\Loader\ValidatorMetadataLoader" public="false">
             <argument type="service" id="validator" />
         </service>

@@ -120,17 +120,33 @@ class ClassMetadata implements ClassMetadataInterface
     /**
      * {@inheritdoc}
      */
-    public function addAttribute(AttributeMetadataInterface $attributeMetadata)
+    public function getAttributes()
     {
-        $this->attributes[$attributeMetadata->getName()] = $attributeMetadata;
+        return $this->attributes;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function getAttributes()
+    public function hasAttribute($name)
     {
-        return $this->attributes;
+        return isset($this->attributes[$name]);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getAttribute($name)
+    {
+        return $this->attributes[$name];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function addAttribute(AttributeMetadataInterface $attributeMetadata)
+    {
+        $this->attributes[$attributeMetadata->getName()] = $attributeMetadata;
     }
 
     /**

@@ -54,18 +54,36 @@ interface ClassMetadataInterface
     public function getIri();
 
     /**
+     * Gets attributes metadata.
+     *
+     * @return AttributeMetadataInterface[]
+     */
+    public function getAttributes();
+
+    /**
+     * Has the class metadata the given attribute metadata?
+     *
+     * @param string $name
+     *
+     * @return bool
+     */
+    public function hasAttribute($name);
+
+    /**
+     * Gets the given attribute metadata.
+     *
+     * @param string $name
+     *
+     * @return AttributeMetadataInterface
+     */
+    public function getAttribute($name);
+
+    /**
      * Adds an {@link AttributeMetadataInterface}.
      *
      * @param AttributeMetadataInterface $attributeMetadata
      */
     public function addAttribute(AttributeMetadataInterface $attributeMetadata);
-
-    /**
-     * Gets attributes.
-     *
-     * @return AttributeMetadataInterface[]
-     */
-    public function getAttributes();
 
     /**
      * Returns a {@see \ReflectionClass} instance for this class.

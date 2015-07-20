@@ -11,6 +11,8 @@
 
 namespace Dunglas\ApiBundle\Mapping;
 
+use PropertyInfo\Type;
+
 /**
  * {@inheritdoc}
  *
@@ -21,6 +23,14 @@ class AttributeMetadata implements AttributeMetadataInterface
     const DEFAULT_IDENTIFIER_NAME = 'id';
 
     /**
+     * @var bool
+     *
+     * @internal This property is public in order to reduce the size of the
+     *           class' serialized representation. Do not access it. Use
+     *           {@link isIdentifier()} instead.
+     */
+    public $identifier;
+    /**
      * @var string
      *
      * @internal This property is public in order to reduce the size of the
@@ -29,7 +39,7 @@ class AttributeMetadata implements AttributeMetadataInterface
      */
     public $name;
     /**
-     * @var \PropertyInfo\Type[]
+     * @var Type[]
      *
      * @internal This property is public in order to reduce the size of the
      *           class' serialized representation. Do not access it. Use
@@ -73,6 +83,22 @@ class AttributeMetadata implements AttributeMetadataInterface
      *
      * @internal This property is public in order to reduce the size of the
      *           class' serialized representation. Do not access it. Use
+     *           {@link isLink()} instead.
+     */
+    public $link = false;
+    /**
+     * @var string
+     *
+     * @internal This property is public in order to reduce the size of the
+     *           class' serialized representation. Do not access it. Use
+     *           {@link getLinkClass()} instead.
+     */
+    public $linkClass;
+    /**
+     * @var bool
+     *
+     * @internal This property is public in order to reduce the size of the
+     *           class' serialized representation. Do not access it. Use
      *           {@link isNormalizationLink()} instead.
      */
     public $normalizationLink = false;
@@ -92,14 +118,6 @@ class AttributeMetadata implements AttributeMetadataInterface
      *           {@link getIri()} instead.
      */
     public $iri;
-    /**
-     * @var bool
-     *
-     * @internal This property is public in order to reduce the size of the
-     *           class' serialized representation. Do not access it. Use
-     *           {@link isIdentifier()} instead.
-     */
-    public $identifier;
 
     /**
      * @param string    $name
@@ -202,6 +220,44 @@ class AttributeMetadata implements AttributeMetadataInterface
     /**
      * {@inheritdoc}
      */
+    public function withLink($link)
+    {
+        $attributeMetadata = clone $this;
+        $attributeMetadata->link = $link;
+
+        return $attributeMetadata;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function isLink()
+    {
+        return $this->link;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function withLinkClass($linkClass)
+    {
+        $attributeMetadata = clone $this;
+        $attributeMetadata->linkClass = $linkClass;
+
+        return $attributeMetadata;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getLinkClass()
+    {
+        return $this->linkClass;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function setNormalizationLink($normalizationLink)
     {
         $this->normalizationLink = $normalizationLink;
@@ -272,15 +328,17 @@ class AttributeMetadata implements AttributeMetadataInterface
     {
         return [
             'name',
+            'identifier',
             'types',
             'description',
             'readable',
             'writable',
             'required',
+            'link',
+            'linkClass',
             'normalizationLink',
             'denormalizationLink',
             'iri',
-            'identifier',
         ];
     }
 }

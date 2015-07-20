@@ -96,9 +96,41 @@ interface AttributeMetadataInterface
     public function setRequired($required);
 
     /**
+     * Returns an instance with the specified link value.
+     *
+     * @param bool $link
+     *
+     * @return self
+     */
+    public function withLink($link);
+
+    /**
+     * Is this attribute a relation to a resource?
+     *
+     * @return bool
+     */
+    public function isLink();
+
+    /**
+     * Returns an instance with the specified link class.
+     *
+     * @param string $linkClass
+     *
+     * @return self
+     */
+    public function withLinkClass($linkClass);
+
+    /**
+     * Gets the entity class of the related resource.
+     *
+     * @return self
+     */
+    public function getLinkClass();
+
+    /**
      * Sets normalization link?
      *
-     * @param bool normalizationLink
+     * @param bool $normalizationLink
      */
     public function setNormalizationLink($normalizationLink);
 
@@ -112,7 +144,7 @@ interface AttributeMetadataInterface
     /**
      * Sets denormalization link?
      *
-     * @param bool normalizationLink
+     * @param bool $denormalizationLink
      */
     public function setDenormalizationLink($denormalizationLink);
 

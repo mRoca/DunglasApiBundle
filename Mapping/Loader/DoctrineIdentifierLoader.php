@@ -12,6 +12,7 @@
 namespace Dunglas\ApiBundle\Mapping\Loader;
 
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Dunglas\ApiBundle\Mapping\AttributeMetadata;
 use Dunglas\ApiBundle\Mapping\ClassMetadataInterface;
 
 /**
@@ -66,6 +67,9 @@ class DoctrineIdentifierLoader implements LoaderInterface
                 return true;
             }
         }
+
+        $attributeMetadata = new AttributeMetadata($identifierName, true);
+        $classMetadata->addAttribute($attributeMetadata);
 
         return true;
     }

@@ -106,7 +106,7 @@ class ClassMetadata implements ClassMetadataInterface
     }
 
     /**
-     * @return AttributeMetadataInterface
+     * {@inheritdoc}
      */
     public function getIdentifier()
     {
@@ -115,26 +115,14 @@ class ClassMetadata implements ClassMetadataInterface
                 return $attribute;
             }
         }
-
-        return;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function addAttribute(AttributeMetadata $attributeMetadata)
+    public function addAttribute(AttributeMetadataInterface $attributeMetadata)
     {
         $this->attributes[$attributeMetadata->getName()] = $attributeMetadata;
-    }
-
-    /**
-     * @param AttributeMetadata $attributeMetadata
-     */
-    public function removeAttribute(AttributeMetadata $attributeMetadata)
-    {
-        if (isset($this->attributes[$attributeMetadata->getName()])) {
-            unset($this->attributes[$attributeMetadata->getName()]);
-        }
     }
 
     /**

@@ -108,7 +108,7 @@ class AttributeMetadata implements AttributeMetadataInterface
     public function __construct($name, $identifier = null)
     {
         $this->name = $name;
-        $this->identifier = ($identifier === null) ? $name === self::DEFAULT_IDENTIFIER_NAME : $identifier;
+        $this->identifier = null === $identifier ? $name === self::DEFAULT_IDENTIFIER_NAME : $identifier;
     }
 
     /**

@@ -13,6 +13,7 @@ namespace Dunglas\ApiBundle\Mapping\Loader;
 
 use Dunglas\ApiBundle\Api\ResourceCollectionInterface;
 use Dunglas\ApiBundle\Mapping\AttributeMetadata;
+use Dunglas\ApiBundle\Mapping\AttributeMetadataInterface;
 use Dunglas\ApiBundle\Mapping\ClassMetadataInterface;
 use Dunglas\ApiBundle\Util\ReflectionTrait;
 use PropertyInfo\PropertyInfoInterface;
@@ -59,25 +60,81 @@ class AttributesLoader implements LoaderInterface
         array $denormalizationGroups = null,
         array $validationGroups = null
     ) {
+        $this->populateFromSerializerMetadata($classMetadata, $normalizationGroups, $denormalizationGroups);
+        $this->populateUsingReflection($classMetadata, $normalizationGroups, $denormalizationGroups);
+
+        return true;
+    }
+
+    /**
+     * Populates attributes from serializer metadata.
+     *
+     * @param ClassMetadataInterface $classMetadata
+     * @param array|null             $normalizationGroups
+     * @param array|null             $denormalizationGroups
+     */
+    private function populateFromSerializerMetadata(
+        ClassMetadataInterface $classMetadata,
+        array $normalizationGroups = null,
+        array $denormalizationGroups = null
+    ) {
+        if (!$this->serializerClassMetadataFactory || (null === $normalizationGroups && null === $denormalizationGroups)) {
+            return;
+        }
+
+        $serializerClassMetadata = $this->serializerClassMetadataFactory->getMetadataFor($classMetadata->getName());
+
+        foreach ($serializerClassMetadata->getAttributesMetadata() as $serializerAttribute) {
+            $groups = $serializerAttribute->getGroups();
+
+            if (null !== $normalizationGroups && 0 < count(array_intersect($groups, $normalizationGroups))) {
+                $attribute = $this->getOrCreateAttribute($classMetadata, $serializerAttribute->getName(), $normalizationGroups, $denormalizationGroups);
+
+                if (!$attribute->isIdentifier()) {
+                    $attribute->setReadable(true);
+                }
+            }
+
+            if (null !== $denormalizationGroups && 0 < count(array_intersect($groups, $denormalizationGroups))) {
+                $attribute = $this->getOrCreateAttribute($classMetadata, $serializerAttribute->getName(), $normalizationGroups, $denormalizationGroups);
+
+                if (!$attribute->isIdentifier()) {
+                    $attribute->setWritable(true);
+                }
+            }
+        }
+    }
+
+    /**
+     * Populates attributes using reflection.
+     *
+     * @param ClassMetadataInterface $classMetadata
+     * @param array|null             $normalizationGroups
+     * @param array|null             $denormalizationGroups
+     */
+    private function populateUsingReflection(
+        ClassMetadataInterface $classMetadata,
+        array $normalizationGroups = null,
+        array $denormalizationGroups = null
+    ) {
+        if (null !== $normalizationGroups && null !== $denormalizationGroups) {
+            return;
+        }
+
         $reflectionClass = $classMetadata->getReflectionClass();
 
         // Methods
         foreach ($reflectionClass->getMethods(\ReflectionMethod::IS_PUBLIC) as $reflectionMethod) {
             $numberOfRequiredParameters = $reflectionMethod->getNumberOfRequiredParameters();
+            $methodName = $reflectionMethod->name;
 
-            // Setters
-            if (
-                $numberOfRequiredParameters <= 1 &&
-                preg_match('/^(set|add|remove)(.+)$/i', $reflectionMethod->name, $matches)
+            if ($this->populateFromSetter(
+                $classMetadata,
+                $methodName,
+                $numberOfRequiredParameters,
+                $normalizationGroups,
+                $denormalizationGroups)
             ) {
-                $attribute = $this->getOrCreateAttribute(
-                    $classMetadata,
-                    lcfirst($matches[2]),
-                    $normalizationGroups,
-                    $denormalizationGroups
-                );
-                $attribute->setWritable(true);
-
                 continue;
             }
 
@@ -85,32 +142,11 @@ class AttributesLoader implements LoaderInterface
                 continue;
             }
 
-            // Getters and hassers
-            if (
-                (strpos($reflectionMethod->name, 'get') === 0 || strpos($reflectionMethod->name, 'has') === 0)
-            ) {
-                $attribute = $this->getOrCreateAttribute(
-                    $classMetadata,
-                    lcfirst(substr($reflectionMethod->name, 3)),
-                    $normalizationGroups,
-                    $denormalizationGroups
-                );
-                $attribute->setReadable(true);
-
+            if ($this->populateFromGetterAndHasser($classMetadata, $methodName, $normalizationGroups, $denormalizationGroups)) {
                 continue;
             }
 
-            // Issers
-            if (strpos($reflectionMethod->name, 'is') === 0) {
-                $attribute = $this->getOrCreateAttribute(
-                    $classMetadata,
-                    lcfirst(substr($reflectionMethod->name, 2)),
-                    $normalizationGroups,
-                    $denormalizationGroups
-                );
-
-                $attribute->setReadable(true);
-            }
+            $this->populateFromIsser($classMetadata, $methodName, $normalizationGroups, $denormalizationGroups);
         }
 
         // Properties
@@ -122,62 +158,111 @@ class AttributesLoader implements LoaderInterface
                 $denormalizationGroups
             );
 
-            $attribute->setReadable(true);
-            $attribute->setWritable(true);
-        }
-
-        if (null === $normalizationGroups && null === $denormalizationGroups) {
-            return true;
-        }
-
-        $serializerClassMetadata = $this->serializerClassMetadataFactory ? $this->serializerClassMetadataFactory->getMetadataFor($classMetadata->getName()) : null;
-
-        if ($serializerClassMetadata) {
-            $normalizationAttributes = [];
-            foreach ($serializerClassMetadata->getAttributesMetadata() as $normalizationAttribute) {
-                $normalizationAttributes[$normalizationAttribute->getName()] = $normalizationAttribute;
+            if (null === $normalizationGroups) {
+                $attribute->setReadable(true);
             }
 
-            foreach ($classMetadata->getAttributes() as $attribute) {
-                if ($attribute->isIdentifier()) {
-                    continue;
-                }
-                $attributeGroups = isset($normalizationAttributes[$attribute->getName()]) ? $normalizationAttributes[$attribute->getName()]->getGroups() : array();
-                $readable = true;
-                $writable = true;
-
-                if (null !== $normalizationGroups) {
-                    $readable = count(array_intersect($attributeGroups, $normalizationGroups)) > 0;
-                }
-                if (null !== $denormalizationGroups) {
-                    $writable = count(array_intersect($attributeGroups, $denormalizationGroups)) > 0;
-                }
-
-                if (!$readable && !$writable) {
-                    $classMetadata->removeAttribute($attribute);
-                } else {
-                    $attribute->setReadable($readable);
-                    $attribute->setWritable($writable);
-                }
+            if (null === $denormalizationGroups) {
+                $attribute->setWritable(true);
             }
-        } else {
-            throw new \Exception('Cannot apply normalization settings, serializer class metadata factory not found');
         }
+    }
+
+    /**
+     * Populates attributes from setter methods.
+     *
+     * @param ClassMetadataInterface $classMetadata
+     * @param string                 $methodName
+     * @param int                    $numberOfRequiredParameters
+     * @param array|null             $normalizationGroups
+     * @param array|null             $denormalizationGroups
+     *
+     * @return bool
+     */
+    private function populateFromSetter(
+        ClassMetadataInterface $classMetadata,
+        $methodName,
+        $numberOfRequiredParameters,
+        array $normalizationGroups = null,
+        array $denormalizationGroups = null
+    ) {
+        if (
+            null !== $denormalizationGroups ||
+            1 !== $numberOfRequiredParameters ||
+            !preg_match('/^(set|add|remove)(.+)$/i', $methodName, $matches)
+        ) {
+            return false;
+        }
+
+        $attribute = $this->getOrCreateAttribute($classMetadata, lcfirst($matches[2]), $normalizationGroups, $denormalizationGroups);
+        $attribute->setWritable(true);
 
         return true;
     }
 
     /**
-     * Gets or creates the {@see AttributeMetadata} of the given name.
+     * Populates attributes from getters and hassers.
      *
-     * @param ClassMetadata $classMetadata
-     * @param string        $attributeName
-     * @param array|null    $normalizationGroups
+     * @param ClassMetadataInterface $classMetadata
+     * @param string                 $methodName
+     * @param array|null             $normalizationGroups
+     * @param array|null             $denormalizationGroups
      *
-     * @return AttributeMetadata
+     * @return bool
+     */
+    private function populateFromGetterAndHasser(
+        ClassMetadataInterface $classMetadata,
+        $methodName,
+        array $normalizationGroups = null,
+        array $denormalizationGroups = null
+    ) {
+        if (
+            null !== $normalizationGroups ||
+            (0 !== strpos($methodName, 'get') && 0 !== strpos($methodName, 'has'))
+        ) {
+            return false;
+        }
+
+        $attribute = $this->getOrCreateAttribute($classMetadata, lcfirst(substr($methodName, 3)), $normalizationGroups, $denormalizationGroups);
+        $attribute->setReadable(true);
+
+        return true;
+    }
+
+    /**
+     * Populates attributes from issers.
+     *
+     * @param ClassMetadataInterface $classMetadata
+     * @param string                 $methodName
+     * @param array|null             $normalizationGroups
+     * @param array|null             $denormalizationGroups
+     */
+    private function populateFromIsser(
+        ClassMetadataInterface $classMetadata,
+        $methodName,
+        array $normalizationGroups = null,
+        array $denormalizationGroups = null
+    ) {
+        if (null !== $normalizationGroups || 0 !== strpos($methodName, 'is')) {
+            return;
+        }
+
+        $attribute = $this->getOrCreateAttribute($classMetadata, lcfirst(substr($methodName, 2)), $normalizationGroups, $denormalizationGroups);
+        $attribute->setReadable(true);
+    }
+
+    /**
+     * Gets or creates the {@see AttributeMetadataInterface} of the given name.
+     *
+     * @param ClassMetadataInterface $classMetadata
+     * @param string                 $attributeName
+     * @param array|null             $normalizationGroups
+     * @param array|null             $denormalizationGroups
+     *
+     * @return AttributeMetadataInterface
      */
     private function getOrCreateAttribute(
-        ClassMetadata $classMetadata,
+        ClassMetadataInterface $classMetadata,
         $attributeName,
         array $normalizationGroups = null,
         array $denormalizationGroups = null

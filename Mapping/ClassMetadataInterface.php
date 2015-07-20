@@ -54,16 +54,16 @@ interface ClassMetadataInterface
     public function getIri();
 
     /**
-     * Adds an {@link AttributeMetadata}.
+     * Adds an {@link AttributeMetadataInterface}.
      *
-     * @param AttributeMetadata $attributeMetadata
+     * @param AttributeMetadataInterface $attributeMetadata
      */
-    public function addAttribute(AttributeMetadata $attributeMetadata);
+    public function addAttribute(AttributeMetadataInterface $attributeMetadata);
 
     /**
      * Gets attributes.
      *
-     * @return AttributeMetadata[]
+     * @return AttributeMetadataInterface[]
      */
     public function getAttributes();
 
@@ -77,7 +77,7 @@ interface ClassMetadataInterface
     /**
      * Gets the attribute identifier of the class.
      *
-     * @return AttributeMetadataInterface
+     * @return AttributeMetadataInterface|null
      */
     public function getIdentifier();
 }

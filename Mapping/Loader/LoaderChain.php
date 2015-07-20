@@ -44,7 +44,7 @@ class LoaderChain implements LoaderInterface
     {
         foreach ($loaders as $loader) {
             if (!$loader instanceof LoaderInterface) {
-                throw new InvalidArgumentException(sprintf('Class %s is expected to implement LoaderInterface', get_class($loader)));
+                throw new InvalidArgumentException(sprintf('Class "%s" is expected to implement LoaderInterface.', get_class($loader)));
             }
         }
 
@@ -84,7 +84,7 @@ class LoaderChain implements LoaderInterface
     private function checkClassMetaData(ClassMetadataInterface $classMetaData)
     {
         if (!$classMetaData->getIdentifier()) {
-            throw new RuntimeException(sprintf('Class "%s" have no identifier.', $classMetaData->getName()));
+            throw new RuntimeException(sprintf('Class "%s" has no identifier.', $classMetaData->getName()));
         }
     }
 }
